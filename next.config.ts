@@ -1,12 +1,18 @@
 import type { NextConfig } from "next";
 
+// No GitHub Pages o site fica em /<repositório>; o workflow informa o caminho em BASE_PATH.
+const basePath = process.env.BASE_PATH ?? "";
+
 const nextConfig: NextConfig = {
-  /* config options here */
+  // Gera um site estático na pasta `out/` (GitHub Pages não executa servidor Node).
+  output: "export",
+  basePath,
+  images: { unoptimized: true },
   experimental: {
     agentFeedback: true,
   },
-  cacheComponents: true,
-  partialPrefetching: true,
+  // cacheComponents e partialPrefetching ficam desligados: dependem de renderização
+  // parcial no servidor (PPR), que não existe em um site estático.
   turbopack: {
     rules: {
       "*.css": {

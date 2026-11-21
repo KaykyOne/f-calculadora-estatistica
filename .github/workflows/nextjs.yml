@@ -51,16 +51,14 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: "22"
           cache: ${{ steps.detect-package-manager.outputs.manager }}
       - name: Setup Pages
+        id: pages
         uses: actions/configure-pages@v5
-        with:
-          # Automatically inject basePath in your Next.js configuration file and disable
-          # server side image optimization (https://nextjs.org/docs/api-reference/next/image#unoptimized).
-          #
-          # You may remove this line if you want to manage the configuration yourself.
-          static_site_generator: next
+        # Sem "static_site_generator: next": essa opção cria um next.config.js que
+        # substitui o next.config.ts (e com ele o loader do Tailwind). O export
+        # estático já está configurado no next.config.ts.
       - name: Restore cache
         uses: actions/cache@v4
         with:
@@ -75,6 +73,9 @@ jobs:
         run: ${{ steps.detect-package-manager.outputs.manager }} ${{ steps.detect-package-manager.outputs.command }}
       - name: Build with Next.js
         run: ${{ steps.detect-package-manager.outputs.runner }} next build
+        env:
+          # Ex.: "/f-calculadora-estatistica" — o site é servido nesse subcaminho.
+          BASE_PATH: ${{ steps.pages.outputs.base_path }}
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
