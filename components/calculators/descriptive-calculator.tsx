@@ -13,13 +13,14 @@ import { CalculatorCard } from "@/components/shared/calculator-card"
 import { CalculationStatus } from "@/components/shared/error-message"
 import { ResultCard, type ResultItem } from "@/components/shared/result-card"
 import { useDescriptiveStatistics } from "@/hooks/use-descriptive-statistics"
+import { useHistoryRecorder } from "@/hooks/use-history-recorder"
 import { fmt, fmtUnambiguous, texNum } from "@/lib/formatters"
 import { DESCRIPTIVE_EXAMPLE } from "./examples"
-import type { CalculatorProps } from "./types"
+import { restoreForm, type CalculatorProps } from "./types"
 
-export function DescriptiveCalculator({ decimals: d }: CalculatorProps) {
+export function DescriptiveCalculator({ decimals: d, calculatorId, initialForm }: CalculatorProps) {
   // ─── 1) Estado e cálculo ───
-  const [text, setText] = useState("")
+  const [text, setText] = useState(() => restoreForm({ text: "" }, initialForm).text)
   const state = useDescriptiveStatistics(text)
   const r = state.result
 
@@ -68,6 +69,19 @@ export function DescriptiveCalculator({ decimals: d }: CalculatorProps) {
       ]
     : []
 
+  // ─── Histórico: frase de conferência e resultado principal desta conta ───
+  const summary = r ? `média e desvio padrão de ${r.n} valores.` : ""
+  useHistoryRecorder(
+    calculatorId,
+    r
+      ? {
+          form: { text },
+          summary,
+          result: `σ = ${fmt(r.populationSd, d)} ; s = ${r.sampleSd === null ? "—" : fmt(r.sampleSd, d)}`,
+        }
+      : null,
+  )
+
   // ─── 4) Tela ───
   return (
     <div className="flex flex-col gap-4">
@@ -109,7 +123,7 @@ export function DescriptiveCalculator({ decimals: d }: CalculatorProps) {
 
         {r && (
           <ResultCard
-            summary={`média e desvio padrão de ${r.n} valores.`}
+            summary={summary}
             items={items}
             interpretation={`Em média, os valores se afastam cerca de ${fmt(r.sampleSd ?? r.populationSd, d)} unidades da média ${fmt(r.mean, d)}.`}
           />

@@ -17,10 +17,11 @@ import { NumberField } from "@/components/shared/number-field"
 import { ResultCard, type ResultItem } from "@/components/shared/result-card"
 import { SegmentedControl } from "@/components/shared/segmented-control"
 import { useForm } from "@/hooks/use-form"
+import { useHistoryRecorder } from "@/hooks/use-history-recorder"
 import { useSampleSizeProportion, type ProportionUnit } from "@/hooks/use-sample-size-proportion"
 import { fmt, fmtPlain, fmtUnambiguous, texNum } from "@/lib/formatters"
 import { SAMPLE_SIZE_PROPORTION_EMPTY, SAMPLE_SIZE_PROPORTION_EXAMPLE } from "./examples"
-import type { CalculatorProps } from "./types"
+import { restoreForm, type CalculatorProps } from "./types"
 
 /** Opções do seletor de unidade. */
 const UNIT_OPTIONS: { value: ProportionUnit; label: string }[] = [
@@ -28,9 +29,9 @@ const UNIT_OPTIONS: { value: ProportionUnit; label: string }[] = [
   { value: "percent", label: "Porcentagem (30%)" },
 ]
 
-export function SampleSizeProportionCalculator({ decimals: d }: CalculatorProps) {
+export function SampleSizeProportionCalculator({ decimals: d, calculatorId, initialForm }: CalculatorProps) {
   // ─── 1) Estado e cálculo ───
-  const { form, set, setForm } = useForm(SAMPLE_SIZE_PROPORTION_EMPTY)
+  const { form, set, setForm } = useForm(restoreForm(SAMPLE_SIZE_PROPORTION_EMPTY, initialForm))
   const state = useSampleSizeProportion(form)
   const r = state.result
   const pct = form.unit === "percent"
@@ -75,6 +76,10 @@ export function SampleSizeProportionCalculator({ decimals: d }: CalculatorProps)
         },
       ]
     : []
+
+  // ─── Histórico: frase de conferência e resultado principal desta conta ───
+  const summary = r ? `tamanho mínimo da amostra para estimar uma PROPORÇÃO, com p = ${fmtUnambiguous(r.p)}${form.unknownP ? " (desconhecida)" : ""}, Ep = ${fmtUnambiguous(r.margin)} (${fmtUnambiguous(r.margin * 100)}%) e ${form.level}% de confiança.` : ""
+  useHistoryRecorder(calculatorId, r ? { form, summary, result: `n = ${fmtPlain(r.n)}` } : null)
 
   // ─── 4) Tela ───
   return (
@@ -125,7 +130,7 @@ export function SampleSizeProportionCalculator({ decimals: d }: CalculatorProps)
 
         {r && (
           <ResultCard
-            summary={`tamanho mínimo da amostra para estimar uma PROPORÇÃO, com p = ${fmtUnambiguous(r.p)}${form.unknownP ? " (desconhecida)" : ""}, Ep = ${fmtUnambiguous(r.margin)} (${fmtUnambiguous(r.margin * 100)}%) e ${form.level}% de confiança.`}
+            summary={summary}
             items={items}
             interpretation={`São necessárias pelo menos ${fmtPlain(r.n)} observações para estimar a proporção com margem de erro de ${fmtUnambiguous(r.margin * 100)}% e ${form.level}% de confiança.`}
           />

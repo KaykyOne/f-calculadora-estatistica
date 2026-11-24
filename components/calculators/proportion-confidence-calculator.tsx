@@ -14,14 +14,15 @@ import { CalculationStatus } from "@/components/shared/error-message"
 import { NumberField } from "@/components/shared/number-field"
 import { ResultCard, type ResultItem } from "@/components/shared/result-card"
 import { useForm } from "@/hooks/use-form"
+import { useHistoryRecorder } from "@/hooks/use-history-recorder"
 import { useProportionConfidenceInterval } from "@/hooks/use-proportion-confidence-interval"
 import { fmt, fmtPercent, fmtUnambiguous, texNum } from "@/lib/formatters"
 import { PROPORTION_CI_EMPTY, PROPORTION_CI_EXAMPLE } from "./examples"
-import type { CalculatorProps } from "./types"
+import { restoreForm, type CalculatorProps } from "./types"
 
-export function ProportionConfidenceCalculator({ decimals: d }: CalculatorProps) {
+export function ProportionConfidenceCalculator({ decimals: d, calculatorId, initialForm }: CalculatorProps) {
   // ─── 1) Estado e cálculo ───
-  const { form, set, setForm } = useForm(PROPORTION_CI_EMPTY)
+  const { form, set, setForm } = useForm(restoreForm(PROPORTION_CI_EMPTY, initialForm))
   const state = useProportionConfidenceInterval(form)
   const r = state.result
   /** Casas das porcentagens: 2 a menos que os decimais (0,3194 → 31,94%). */
@@ -74,6 +75,10 @@ export function ProportionConfidenceCalculator({ decimals: d }: CalculatorProps)
       ]
     : []
 
+  // ─── Histórico: frase de conferência e resultado principal desta conta ───
+  const summary = r ? `intervalo de ${form.level}% de confiança para a PROPORÇÃO, com ${fmtUnambiguous(r.successes)} sucessos em n = ${fmtUnambiguous(r.n)}.` : ""
+  useHistoryRecorder(calculatorId, r ? { form, summary, result: `IC = (${fmt(r.lower, d)} ; ${fmt(r.upper, d)})` } : null)
+
   // ─── 4) Tela ───
   return (
     <div className="flex flex-col gap-4">
@@ -108,7 +113,7 @@ export function ProportionConfidenceCalculator({ decimals: d }: CalculatorProps)
 
         {r && (
           <ResultCard
-            summary={`intervalo de ${form.level}% de confiança para a PROPORÇÃO, com ${fmtUnambiguous(r.successes)} sucessos em n = ${fmtUnambiguous(r.n)}.`}
+            summary={summary}
             items={items}
             interpretation={`Com ${form.level}% de confiança, a proporção populacional π está entre ${fmtPercent(r.lower, pd)} e ${fmtPercent(r.upper, pd)}.`}
           />

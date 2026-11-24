@@ -17,10 +17,11 @@ import { NumberField } from "@/components/shared/number-field"
 import { ResultCard, type ResultItem } from "@/components/shared/result-card"
 import { ScatterChart } from "@/components/shared/scatter-chart"
 import { useLinearRegression } from "@/hooks/use-linear-regression"
+import { useHistoryRecorder } from "@/hooks/use-history-recorder"
 import { fmt, fmtPercent, fmtUnambiguous, texNum } from "@/lib/formatters"
 import type { PairRow } from "@/lib/statistics/validation"
 import { EXAMPLE_PAIRS, REGRESSION_EXAMPLE_X } from "./examples"
-import type { CalculatorProps } from "./types"
+import { restoreForm, type CalculatorProps } from "./types"
 
 /**
  * Monta a equação da reta com o sinal certo: "ŷ = 0,6x − 33,3333" (e não "+ −33,3333").
@@ -32,10 +33,12 @@ function equation(a: number, b: number, d: number, asTex = false): string {
   return `${asTex ? String.raw`\hat{y}` : "ŷ"} = ${num(a)}x ${sign} ${num(Math.abs(b))}`
 }
 
-export function LinearRegressionCalculator({ decimals: d }: CalculatorProps) {
+export function LinearRegressionCalculator({ decimals: d, calculatorId, initialForm }: CalculatorProps) {
   // ─── 1) Estado e cálculo ───
-  const [rows, setRows] = useState<PairRow[]>(emptyRows)
-  const [predictX, setPredictX] = useState("")
+  // Valores iniciais: vazios, ou o que veio do histórico.
+  const [initial] = useState(() => restoreForm({ rows: emptyRows(), predictX: "" }, initialForm))
+  const [rows, setRows] = useState<PairRow[]>(initial.rows)
+  const [predictX, setPredictX] = useState(initial.predictX)
   const state = useLinearRegression(rows, predictX)
   const r = state.result
   const pred = state.prediction
@@ -93,6 +96,19 @@ export function LinearRegressionCalculator({ decimals: d }: CalculatorProps) {
       ]
     : []
 
+  // ─── Histórico: frase de conferência e resultado principal desta conta ───
+  const summary = r ? `regressão linear com ${r.n} pares (X de ${fmtUnambiguous(r.minX)} a ${fmtUnambiguous(r.maxX)})${pred ? `, prevendo ŷ para x = ${fmtUnambiguous(pred.x)}` : ""}.` : ""
+  useHistoryRecorder(
+    calculatorId,
+    r
+      ? {
+          form: { rows, predictX },
+          summary,
+          result: equation(r.a, r.b, d) + (pred ? ` ; ŷ(${fmtUnambiguous(pred.x)}) = ${fmt(pred.y, d)}` : ""),
+        }
+      : null,
+  )
+
   // ─── 4) Tela ───
   return (
     <div className="flex flex-col gap-4">
@@ -122,7 +138,7 @@ export function LinearRegressionCalculator({ decimals: d }: CalculatorProps) {
         <div className="flex flex-col gap-4">
           {r && (
             <ResultCard
-              summary={`regressão linear com ${r.n} pares (X de ${fmtUnambiguous(r.minX)} a ${fmtUnambiguous(r.maxX)})${pred ? `, prevendo ŷ para x = ${fmtUnambiguous(pred.x)}` : ""}.`}
+              summary={summary}
               items={items}
               interpretation={interpretation}
             />

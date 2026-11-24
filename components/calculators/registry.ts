@@ -6,6 +6,8 @@
  * ► Para mudar o nome, a descrição, o ícone ou a ordem de uma aba, altere só este arquivo.
  * ► Para criar uma calculadora nova: crie o componente em components/calculators/ e
  *   adicione um item aqui.
+ * ► Itens com `extra: true` ficam escondidos no rodapé da barra lateral (ex.: aba Base,
+ *   que não faz parte do material da professora).
  */
 
 import type { ComponentType } from "react"
@@ -31,6 +33,8 @@ export interface CalculatorEntry {
   description: string
   /** Grupo da barra lateral (itens com o mesmo grupo ficam juntos). */
   group: string
+  /** true = aba secundária, mostrada discretamente no rodapé da barra lateral. */
+  extra?: boolean
   /** Ícone (lucide-react). */
   icon: ComponentType<{ className?: string }>
   /** Componente da calculadora. */
@@ -38,15 +42,6 @@ export interface CalculatorEntry {
 }
 
 export const CALCULATORS: CalculatorEntry[] = [
-  {
-    id: "base",
-    title: "Base: média e desvio padrão",
-    shortTitle: "Base (x̄, σ, s)",
-    description: "Calcula a média, a variância e o desvio padrão (σ e s) de uma lista de valores, com a tabela de desvios.",
-    group: "Base",
-    icon: ChartNoAxesColumn,
-    component: DescriptiveCalculator,
-  },
   {
     id: "valores-criticos",
     title: "Valores críticos Zα/2",
@@ -110,4 +105,17 @@ export const CALCULATORS: CalculatorEntry[] = [
     icon: ChartLine,
     component: LinearRegressionCalculator,
   },
+  {
+    id: "base",
+    title: "Base: média e desvio padrão",
+    shortTitle: "Base (x̄, σ, s)",
+    description: "Calcula a média, a variância e o desvio padrão (σ e s) de uma lista de valores, com a tabela de desvios.",
+    group: "Extra",
+    extra: true,
+    icon: ChartNoAxesColumn,
+    component: DescriptiveCalculator,
+  },
 ]
+
+/** Aba aberta ao carregar a página: a primeira que não é extra. */
+export const DEFAULT_CALCULATOR_ID = CALCULATORS.find((c) => !c.extra)?.id ?? CALCULATORS[0].id

@@ -15,11 +15,12 @@ import { NumberField } from "@/components/shared/number-field"
 import { ResultCard, type ResultItem } from "@/components/shared/result-card"
 import { SegmentedControl } from "@/components/shared/segmented-control"
 import { useForm } from "@/hooks/use-form"
+import { useHistoryRecorder } from "@/hooks/use-history-recorder"
 import { useMeanConfidenceInterval } from "@/hooks/use-mean-confidence-interval"
 import { fmt, fmtUnambiguous, texNum } from "@/lib/formatters"
 import type { DeviationType } from "@/lib/statistics/types"
 import { MEAN_CI_EMPTY, MEAN_CI_EXAMPLE } from "./examples"
-import type { CalculatorProps } from "./types"
+import { restoreForm, type CalculatorProps } from "./types"
 
 /** Opções do seletor "Tipo de desvio padrão". */
 const SD_OPTIONS: { value: DeviationType; label: string }[] = [
@@ -27,9 +28,9 @@ const SD_OPTIONS: { value: DeviationType; label: string }[] = [
   { value: "sample", label: "Amostral (s)" },
 ]
 
-export function MeanConfidenceCalculator({ decimals: d }: CalculatorProps) {
+export function MeanConfidenceCalculator({ decimals: d, calculatorId, initialForm }: CalculatorProps) {
   // ─── 1) Estado e cálculo ───
-  const { form, set, setForm } = useForm(MEAN_CI_EMPTY)
+  const { form, set, setForm } = useForm(restoreForm(MEAN_CI_EMPTY, initialForm))
   const state = useMeanConfidenceInterval(form)
   const r = state.result
 
@@ -80,6 +81,10 @@ export function MeanConfidenceCalculator({ decimals: d }: CalculatorProps) {
       ]
     : []
 
+  // ─── Histórico: frase de conferência e resultado principal desta conta ───
+  const summary = r ? `intervalo de ${form.level}% de confiança para a MÉDIA, com x̄ = ${fmtUnambiguous(r.mean)}, ${sdSym} = ${fmtUnambiguous(r.sd)} e n = ${fmtUnambiguous(r.n)}.` : ""
+  useHistoryRecorder(calculatorId, r ? { form, summary, result: `IC = (${fmt(r.lower, d)} ; ${fmt(r.upper, d)})` } : null)
+
   // ─── 4) Tela ───
   return (
     <div className="flex flex-col gap-4">
@@ -128,7 +133,7 @@ export function MeanConfidenceCalculator({ decimals: d }: CalculatorProps) {
 
         {r && (
           <ResultCard
-            summary={`intervalo de ${form.level}% de confiança para a MÉDIA, com x̄ = ${fmtUnambiguous(r.mean)}, ${sdSym} = ${fmtUnambiguous(r.sd)} e n = ${fmtUnambiguous(r.n)}.`}
+            summary={summary}
             items={items}
             interpretation={`Com ${form.level}% de confiança, a média populacional μ está entre ${fmt(r.lower, d)} e ${fmt(r.upper, d)}.`}
           />

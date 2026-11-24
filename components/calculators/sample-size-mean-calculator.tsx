@@ -13,14 +13,15 @@ import { CalculationStatus } from "@/components/shared/error-message"
 import { NumberField } from "@/components/shared/number-field"
 import { ResultCard, type ResultItem } from "@/components/shared/result-card"
 import { useForm } from "@/hooks/use-form"
+import { useHistoryRecorder } from "@/hooks/use-history-recorder"
 import { useSampleSizeMean } from "@/hooks/use-sample-size-mean"
 import { fmt, fmtPlain, fmtUnambiguous, texNum } from "@/lib/formatters"
 import { SAMPLE_SIZE_MEAN_EMPTY, SAMPLE_SIZE_MEAN_EXAMPLE } from "./examples"
-import type { CalculatorProps } from "./types"
+import { restoreForm, type CalculatorProps } from "./types"
 
-export function SampleSizeMeanCalculator({ decimals: d }: CalculatorProps) {
+export function SampleSizeMeanCalculator({ decimals: d, calculatorId, initialForm }: CalculatorProps) {
   // ─── 1) Estado e cálculo ───
-  const { form, set, setForm } = useForm(SAMPLE_SIZE_MEAN_EMPTY)
+  const { form, set, setForm } = useForm(restoreForm(SAMPLE_SIZE_MEAN_EMPTY, initialForm))
   const state = useSampleSizeMean(form)
   const r = state.result
 
@@ -47,6 +48,10 @@ export function SampleSizeMeanCalculator({ decimals: d }: CalculatorProps) {
         },
       ]
     : []
+
+  // ─── Histórico: frase de conferência e resultado principal desta conta ───
+  const summary = r ? `tamanho mínimo da amostra para estimar uma MÉDIA, com σ = ${fmtUnambiguous(r.sd)}, Em = ${fmtUnambiguous(r.margin)} e ${form.level}% de confiança.` : ""
+  useHistoryRecorder(calculatorId, r ? { form, summary, result: `n = ${fmtPlain(r.n)}` } : null)
 
   // ─── 4) Tela ───
   return (
@@ -82,7 +87,7 @@ export function SampleSizeMeanCalculator({ decimals: d }: CalculatorProps) {
 
         {r && (
           <ResultCard
-            summary={`tamanho mínimo da amostra para estimar uma MÉDIA, com σ = ${fmtUnambiguous(r.sd)}, Em = ${fmtUnambiguous(r.margin)} e ${form.level}% de confiança.`}
+            summary={summary}
             items={items}
             interpretation={`São necessárias pelo menos ${fmtPlain(r.n)} observações para estimar a média com margem de erro de no máximo ${fmtPlain(r.margin)} e ${form.level}% de confiança.`}
           />

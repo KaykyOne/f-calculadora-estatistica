@@ -2,11 +2,15 @@
 
 Calculadora por fórmulas, com resolução passo a passo, para:
 
-- **Base:** média, variância e desvio padrão (σ e s)
 - **Valores críticos** Zα/2 (90%, 95%, 99%)
 - **Intervalo de confiança** para a média e para a proporção
 - **Tamanho da amostra** para a média e para a proporção
 - **Correlação de Pearson** e **regressão linear simples**, com gráfico
+- **Base** (aba extra, no rodapé da barra lateral): média, variância e desvio padrão (σ e s)
+
+**Histórico:** cada conta com resultado é salva sozinha no navegador (localStorage) depois de
+1,5 s sem digitar. O botão "Histórico" lista as contas, e clicar numa delas abre a calculadora
+com os campos preenchidos.
 
 Tudo roda no navegador: sem servidor, sem banco de dados e sem IA.
 
@@ -39,10 +43,11 @@ Tela (components/calculators/)  →  Hook (hooks/)  →  Fórmula (lib/statistic
 | `lib/statistics/types.ts` | Formato dos dados de entrada e de saída de cada fórmula. |
 | `lib/statistics/__tests__/` | Testes com os exemplos do material (um arquivo por fórmula). |
 | `lib/formatters.ts` | Como os números aparecem na tela (casas decimais, %, KaTeX). |
-| `hooks/` | Um hook por calculadora: valida os campos, chama a fórmula e gera os alertas. |
+| `lib/history.ts` | Histórico salvo no localStorage (adicionar, remover, limpar). |
+| `hooks/` | Um hook por calculadora (valida, chama a fórmula, gera alertas), mais `use-history` e `use-history-recorder`. |
 | `components/calculators/` | A tela de cada calculadora, mais `registry.ts` (lista de abas) e `examples.ts` (dados de exemplo). |
 | `components/shared/` | Peças reutilizadas: campo numérico, card de resultado, passo a passo, tabela X/Y, gráfico. |
-| `components/layout/` | Barra lateral, cabeçalho e estrutura da página. |
+| `components/layout/` | Barra lateral, cabeçalho, painel do histórico e estrutura da página. |
 | `components/ui/` | Componentes gerados pelo shadcn. Não precisam ser editados. |
 
 ## Onde corrigir cada coisa
@@ -56,7 +61,10 @@ Tela (components/calculators/)  →  Hook (hooks/)  →  Fórmula (lib/statistic
 | Um alerta (ex.: "use t de Student") | `hooks/use-<calculadora>.ts` |
 | Os dados do botão "Usar exemplo" | `components/calculators/examples.ts` |
 | Textos, campos ou passo a passo de uma calculadora | `components/calculators/<calculadora>-calculator.tsx` |
-| Nome, ícone ou ordem das abas | `components/calculators/registry.ts` |
+| Nome, ícone ou ordem das abas, ou esconder uma aba no rodapé (`extra: true`) | `components/calculators/registry.ts` |
+| O que aparece no histórico de uma calculadora | O bloco "Histórico" no fim do arquivo da calculadora |
+| Tempo de espera para salvar no histórico | `hooks/use-history-recorder.ts` (`SAVE_DELAY_MS`) |
+| Limite de contas guardadas | `lib/history.ts` (`MAX_ENTRIES`) |
 | Casas decimais ou formato dos números | `lib/formatters.ts` |
 | Cores do tema ou do gráfico | `app/globals.css` |
 

@@ -15,14 +15,15 @@ import { CalculationStatus } from "@/components/shared/error-message"
 import { ResultCard, type ResultItem } from "@/components/shared/result-card"
 import { ScatterChart } from "@/components/shared/scatter-chart"
 import { usePearsonCorrelation } from "@/hooks/use-pearson-correlation"
+import { useHistoryRecorder } from "@/hooks/use-history-recorder"
 import { fmt, fmtUnambiguous, texNum } from "@/lib/formatters"
 import type { PairRow } from "@/lib/statistics/validation"
 import { EXAMPLE_PAIRS } from "./examples"
-import type { CalculatorProps } from "./types"
+import { restoreForm, type CalculatorProps } from "./types"
 
-export function PearsonCalculator({ decimals: d }: CalculatorProps) {
+export function PearsonCalculator({ decimals: d, calculatorId, initialForm }: CalculatorProps) {
   // ─── 1) Estado e cálculo ───
-  const [rows, setRows] = useState<PairRow[]>(emptyRows)
+  const [rows, setRows] = useState<PairRow[]>(() => restoreForm({ rows: emptyRows() }, initialForm).rows)
   const state = usePearsonCorrelation(rows)
   const r = state.result
 
@@ -66,6 +67,10 @@ export function PearsonCalculator({ decimals: d }: CalculatorProps) {
       ]
     : []
 
+  // ─── Histórico: frase de conferência e resultado principal desta conta ───
+  const summary = r ? `correlação de Pearson com ${r.n} pares (X de ${fmtUnambiguous(r.minX)} a ${fmtUnambiguous(r.maxX)}).` : ""
+  useHistoryRecorder(calculatorId, r ? { form: { rows }, summary, result: `r = ${fmt(r.r, d)}` } : null)
+
   // ─── 4) Tela ───
   return (
     <div className="flex flex-col gap-4">
@@ -78,7 +83,7 @@ export function PearsonCalculator({ decimals: d }: CalculatorProps) {
         <div className="flex flex-col gap-4">
           {r && (
             <ResultCard
-              summary={`correlação de Pearson com ${r.n} pares (X de ${fmtUnambiguous(r.minX)} a ${fmtUnambiguous(r.maxX)}).`}
+              summary={summary}
               items={items}
               interpretation={r.interpretation}
             />
