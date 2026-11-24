@@ -1,5 +1,16 @@
 "use client"
 
+/**
+ * CalculatorLayout — estrutura geral da página.
+ *
+ *   ┌──────────┬──────────────────────────────┐
+ *   │ barra    │ cabeçalho (título, decimais, │
+ *   │ lateral  │ tema)                         │
+ *   │          │ calculadora selecionada      │
+ *   └──────────┴──────────────────────────────┘
+ * No celular, a barra lateral vira uma faixa de abas no topo.
+ */
+
 import { useState } from "react"
 import { CALCULATORS } from "@/components/calculators/registry"
 import type { Precision } from "@/lib/formatters"
@@ -7,8 +18,10 @@ import { CalculatorHeader } from "./calculator-header"
 import { CalculatorSidebar } from "./calculator-sidebar"
 
 export function CalculatorLayout() {
+  // Aba aberta e casas decimais (compartilhadas por todas as calculadoras).
   const [activeId, setActiveId] = useState(CALCULATORS[0].id)
   const [decimals, setDecimals] = useState<Precision>(4)
+
   const active = CALCULATORS.find((c) => c.id === activeId) ?? CALCULATORS[0]
   const Active = active.component
 
@@ -22,7 +35,7 @@ export function CalculatorLayout() {
           decimals={decimals}
           onDecimalsChange={setDecimals}
         />
-        {/* key: cada calculadora começa com o próprio estado ao ser aberta */}
+        {/* key: ao trocar de aba, a calculadora começa do zero (campos limpos). */}
         <Active key={active.id} decimals={decimals} />
       </main>
     </div>

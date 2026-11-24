@@ -1,5 +1,13 @@
 "use client"
 
+/**
+ * NumberField — campo numérico com rótulo, símbolo, unidade, descrição e erro.
+ *
+ * Também mostra "✓ Lido como: ..." com o número que a calculadora entendeu,
+ * para o usuário conferir (ex.: "2.200" → "2200"). O valor fica como TEXTO no
+ * formulário; quem converte para número é o hook, com lib/statistics/validation.ts.
+ */
+
 import { useId } from "react"
 import { Input } from "@/components/ui/input"
 import { fmtUnambiguous } from "@/lib/formatters"
@@ -11,12 +19,15 @@ interface NumberFieldProps {
   onChange: (value: string) => void
   /** Símbolo matemático exibido ao lado do rótulo, ex.: "σ". */
   symbol?: string
+  /** Explicação do parâmetro (some quando há erro). */
   description?: string
+  /** Unidade exibida dentro do campo, à direita, ex.: "%". */
   unit?: string
   placeholder?: string
+  /** Mensagem de erro (deixa o campo vermelho). */
   error?: string
   disabled?: boolean
-  /** Texto de conferência para o valor lido. Padrão: o número sem separador de milhar. */
+  /** Texto do "Lido como". Padrão: o número sem separador de milhar. */
   readAs?: (value: number) => string
 }
 
@@ -32,8 +43,11 @@ export function NumberField({
   disabled,
   readAs,
 }: NumberFieldProps) {
+  // Ids únicos para ligar rótulo ↔ campo ↔ dica (acessibilidade).
   const id = useId()
   const hintId = `${id}-hint`
+
+  // "Lido como" só aparece se o valor é um número válido e o campo não tem erro.
   const parsed = parseLocaleNumber(value)
   const reading =
     !error && !disabled && parsed.status === "ok"
@@ -48,7 +62,9 @@ export function NumberField({
         {label}
         {symbol && <span className="ml-1 font-serif text-muted-foreground italic">({symbol})</span>}
       </label>
+
       <div className="relative">
+        {/* type="text" (e não "number") para aceitar vírgula; inputMode abre o teclado numérico no celular. */}
         <Input
           id={id}
           type="text"
@@ -68,6 +84,7 @@ export function NumberField({
           </span>
         )}
       </div>
+
       <div id={hintId} className="text-xs">
         {reading && (
           <p className="font-medium text-emerald-700 dark:text-emerald-400">

@@ -1,5 +1,11 @@
 "use client"
 
+/**
+ * CALCULADORA: BASE — MÉDIA E DESVIO PADRÃO
+ * O usuário cola uma lista de valores; mostra x̄, σ (÷ n), s (÷ n − 1),
+ * a tabela de desvios e o passo a passo. Conta em lib/statistics/descriptive.ts.
+ */
+
 import { useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { CalculationSteps, type Step } from "@/components/shared/calculation-steps"
@@ -8,15 +14,16 @@ import { CalculationStatus } from "@/components/shared/error-message"
 import { ResultCard, type ResultItem } from "@/components/shared/result-card"
 import { useDescriptiveStatistics } from "@/hooks/use-descriptive-statistics"
 import { fmt, fmtUnambiguous, texNum } from "@/lib/formatters"
+import { DESCRIPTIVE_EXAMPLE } from "./examples"
 import type { CalculatorProps } from "./types"
 
-const EXAMPLE = "2; 4; 4; 4; 5; 5; 7; 9"
-
 export function DescriptiveCalculator({ decimals: d }: CalculatorProps) {
+  // ─── 1) Estado e cálculo ───
   const [text, setText] = useState("")
   const state = useDescriptiveStatistics(text)
   const r = state.result
 
+  // ─── 2) Valores do card "Resultado" ───
   const items: ResultItem[] = r
     ? [
         { label: "Desvio padrão populacional (σ) — divide por n", value: fmt(r.populationSd, d), highlight: true },
@@ -34,6 +41,7 @@ export function DescriptiveCalculator({ decimals: d }: CalculatorProps) {
       ]
     : []
 
+  // ─── 3) Passo a passo ───
   const steps: Step[] = r
     ? [
         {
@@ -48,6 +56,7 @@ export function DescriptiveCalculator({ decimals: d }: CalculatorProps) {
           title: "Desvio padrão populacional (divide por n)",
           tex: String.raw`\sigma = \sqrt{\frac{\sum (x_i - \bar{x})^2}{n}} = \sqrt{\frac{${texNum(r.sumSquares, d)}}{${r.n}}} = \sqrt{${texNum(r.populationVariance, d)}} = ${texNum(r.populationSd, d)}`,
         },
+        // O passo do s só existe quando n > 1.
         ...(r.sampleVariance !== null && r.sampleSd !== null
           ? [
               {
@@ -59,13 +68,15 @@ export function DescriptiveCalculator({ decimals: d }: CalculatorProps) {
       ]
     : []
 
+  // ─── 4) Tela ───
   return (
     <div className="flex flex-col gap-4">
       <div className="grid items-start gap-4 lg:grid-cols-2">
+        {/* Entrada dos valores */}
         <CalculatorCard
           title="Dados"
           description="Digite ou cole os valores observados."
-          onExample={() => setText(EXAMPLE)}
+          onExample={() => setText(DESCRIPTIVE_EXAMPLE)}
           onReset={() => setText("")}
         >
           <div className="flex flex-col gap-1.5">
@@ -85,6 +96,7 @@ export function DescriptiveCalculator({ decimals: d }: CalculatorProps) {
               Separe os valores com ponto e vírgula, espaço ou um por linha. Use vírgula para decimais (ex.: 1,5). Uma
               coluna copiada de planilha também funciona.
             </p>
+            {/* Conferência: mostra como cada valor foi lido. */}
             {state.values.length > 0 && !state.error && (
               <p className="text-xs font-medium text-emerald-700 dark:text-emerald-400">
                 ✓ Lidos {state.values.length} valores:{" "}
@@ -104,6 +116,7 @@ export function DescriptiveCalculator({ decimals: d }: CalculatorProps) {
         )}
       </div>
 
+      {/* Ajuda para escolher entre σ e s */}
       <Card>
         <CardHeader>
           <CardTitle>σ ou s: qual usar?</CardTitle>
@@ -123,6 +136,7 @@ export function DescriptiveCalculator({ decimals: d }: CalculatorProps) {
         </CardContent>
       </Card>
 
+      {/* Tabela de desvios: xi, xi − x̄, (xi − x̄)² e a soma de cada coluna */}
       {r && (
         <Card>
           <CardHeader>
@@ -152,6 +166,7 @@ export function DescriptiveCalculator({ decimals: d }: CalculatorProps) {
                 <tr>
                   <td className="py-1.5 pr-4 font-sans">Σ</td>
                   <td className="py-1.5 pr-4">{fmt(r.sum, d)}</td>
+                  {/* A soma dos desvios é sempre 0 (propriedade da média). */}
                   <td className="py-1.5 pr-4">{fmt(0, d)}</td>
                   <td className="py-1.5">{fmt(r.sumSquares, d)}</td>
                 </tr>

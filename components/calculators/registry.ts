@@ -1,3 +1,13 @@
+/**
+ * LISTA DE CALCULADORAS (ABAS)
+ *
+ * A barra lateral e o cabeçalho são montados a partir desta lista, na ordem em que
+ * as calculadoras aparecem aqui.
+ * ► Para mudar o nome, a descrição, o ícone ou a ordem de uma aba, altere só este arquivo.
+ * ► Para criar uma calculadora nova: crie o componente em components/calculators/ e
+ *   adicione um item aqui.
+ */
+
 import type { ComponentType } from "react"
 import { Calculator, ChartLine, ChartNoAxesColumn, ChartScatter, Percent, Ruler, Sigma, Users } from "lucide-react"
 import type { CalculatorProps } from "./types"
@@ -11,12 +21,19 @@ import { PearsonCalculator } from "./pearson-calculator"
 import { LinearRegressionCalculator } from "./linear-regression-calculator"
 
 export interface CalculatorEntry {
+  /** Identificador único (não aparece na tela). */
   id: string
+  /** Título grande no cabeçalho. */
   title: string
+  /** Nome curto na barra lateral. */
   shortTitle: string
+  /** Frase abaixo do título. */
   description: string
+  /** Grupo da barra lateral (itens com o mesmo grupo ficam juntos). */
   group: string
+  /** Ícone (lucide-react). */
   icon: ComponentType<{ className?: string }>
+  /** Componente da calculadora. */
   component: ComponentType<CalculatorProps>
 }
 

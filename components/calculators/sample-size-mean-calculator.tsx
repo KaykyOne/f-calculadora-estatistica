@@ -1,34 +1,62 @@
 "use client"
 
-import { useState } from "react"
+/**
+ * CALCULADORA: TAMANHO DA AMOSTRA PARA MÉDIA
+ *   n = (Zα/2 · σ / Em)²   → sempre arredondado para cima
+ * Validação: hooks/use-sample-size-mean.ts · Fórmula: lib/statistics/sample-size.ts
+ */
+
 import { CalculatorCard } from "@/components/shared/calculator-card"
-import { CalculationSteps } from "@/components/shared/calculation-steps"
+import { CalculationSteps, type Step } from "@/components/shared/calculation-steps"
 import { ConfidenceLevelSelect } from "@/components/shared/confidence-level-select"
 import { CalculationStatus } from "@/components/shared/error-message"
 import { NumberField } from "@/components/shared/number-field"
-import { ResultCard } from "@/components/shared/result-card"
-import { useSampleSizeMean, type SampleSizeMeanForm } from "@/hooks/use-sample-size-mean"
+import { ResultCard, type ResultItem } from "@/components/shared/result-card"
+import { useForm } from "@/hooks/use-form"
+import { useSampleSizeMean } from "@/hooks/use-sample-size-mean"
 import { fmt, fmtPlain, fmtUnambiguous, texNum } from "@/lib/formatters"
+import { SAMPLE_SIZE_MEAN_EMPTY, SAMPLE_SIZE_MEAN_EXAMPLE } from "./examples"
 import type { CalculatorProps } from "./types"
 
-const EMPTY: SampleSizeMeanForm = { sd: "", margin: "", level: 95 }
-const EXAMPLE: SampleSizeMeanForm = { sd: "1250", margin: "100", level: 95 }
-
 export function SampleSizeMeanCalculator({ decimals: d }: CalculatorProps) {
-  const [form, setForm] = useState<SampleSizeMeanForm>(EMPTY)
+  // ─── 1) Estado e cálculo ───
+  const { form, set, setForm } = useForm(SAMPLE_SIZE_MEAN_EMPTY)
   const state = useSampleSizeMean(form)
   const r = state.result
-  const set = <K extends keyof SampleSizeMeanForm>(key: K) => (value: SampleSizeMeanForm[K]) =>
-    setForm((f) => ({ ...f, [key]: value }))
 
+  // ─── 2) Valores do card "Resultado" ───
+  const items: ResultItem[] = r
+    ? [
+        { label: "Tamanho mínimo da amostra (n)", value: fmtPlain(r.n), highlight: true },
+        { label: "Valor crítico Zα/2", value: fmt(r.z, 3) },
+        { label: "n antes do arredondamento", value: fmt(r.raw, d) },
+      ]
+    : []
+
+  // ─── 3) Passo a passo ───
+  const steps: Step[] = r
+    ? [
+        { title: "Fórmula", tex: String.raw`n = \left( \frac{Z_{\alpha/2} \cdot \sigma}{E_m} \right)^2` },
+        { title: "Substituição", tex: String.raw`n = \left( \frac{${texNum(r.z)} \times ${texNum(r.sd)}}{${texNum(r.margin)}} \right)^2` },
+        { title: "Razão interna", tex: String.raw`\frac{${texNum(r.z * r.sd)}}{${texNum(r.margin)}} = ${texNum(r.ratio, d)}` },
+        { title: "Quadrado", tex: String.raw`n = ${texNum(r.ratio, d)}^2 = ${texNum(r.raw, d)}` },
+        {
+          title: "Arredondamento para cima",
+          tex: String.raw`n = \lceil ${texNum(r.raw, d)} \rceil = ${texNum(r.n)}`,
+          text: "O tamanho da amostra é sempre arredondado para cima, para garantir a margem de erro desejada.",
+        },
+      ]
+    : []
+
+  // ─── 4) Tela ───
   return (
     <div className="flex flex-col gap-4">
       <div className="grid items-start gap-4 lg:grid-cols-2">
         <CalculatorCard
           title="Parâmetros"
           description="Defina a precisão desejada para a estimativa da média."
-          onExample={() => setForm(EXAMPLE)}
-          onReset={() => setForm(EMPTY)}
+          onExample={() => setForm(SAMPLE_SIZE_MEAN_EXAMPLE)}
+          onReset={() => setForm(SAMPLE_SIZE_MEAN_EMPTY)}
         >
           <NumberField
             label="Desvio padrão populacional"
@@ -49,40 +77,19 @@ export function SampleSizeMeanCalculator({ decimals: d }: CalculatorProps) {
             error={state.fieldErrors.margin}
           />
           <ConfidenceLevelSelect value={form.level} onChange={set("level")} />
-          <CalculationStatus {...state} hasFieldErrors={Object.keys(state.fieldErrors).length > 0} />
+          <CalculationStatus {...state} />
         </CalculatorCard>
 
         {r && (
           <ResultCard
             summary={`tamanho mínimo da amostra para estimar uma MÉDIA, com σ = ${fmtUnambiguous(r.sd)}, Em = ${fmtUnambiguous(r.margin)} e ${form.level}% de confiança.`}
-            items={[
-              { label: "Tamanho mínimo da amostra (n)", value: fmtPlain(r.n), highlight: true },
-              { label: "Valor crítico Zα/2", value: fmt(r.z, 3) },
-              { label: "n antes do arredondamento", value: fmt(r.raw, d) },
-            ]}
+            items={items}
             interpretation={`São necessárias pelo menos ${fmtPlain(r.n)} observações para estimar a média com margem de erro de no máximo ${fmtPlain(r.margin)} e ${form.level}% de confiança.`}
           />
         )}
       </div>
 
-      {r && (
-        <CalculationSteps
-          steps={[
-            { title: "Fórmula", tex: String.raw`n = \left( \frac{Z_{\alpha/2} \cdot \sigma}{E_m} \right)^2` },
-            { title: "Substituição", tex: String.raw`n = \left( \frac{${texNum(r.z)} \times ${texNum(r.sd)}}{${texNum(r.margin)}} \right)^2` },
-            {
-              title: "Razão interna",
-              tex: String.raw`\frac{${texNum(r.z * r.sd)}}{${texNum(r.margin)}} = ${texNum(r.ratio, d)}`,
-            },
-            { title: "Quadrado", tex: String.raw`n = ${texNum(r.ratio, d)}^2 = ${texNum(r.raw, d)}` },
-            {
-              title: "Arredondamento para cima",
-              tex: String.raw`n = \lceil ${texNum(r.raw, d)} \rceil = ${texNum(r.n)}`,
-              text: "O tamanho da amostra é sempre arredondado para cima, para garantir a margem de erro desejada.",
-            },
-          ]}
-        />
-      )}
+      {r && <CalculationSteps steps={steps} />}
     </div>
   )
 }

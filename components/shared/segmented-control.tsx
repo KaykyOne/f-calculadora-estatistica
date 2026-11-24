@@ -1,5 +1,11 @@
 "use client"
 
+/**
+ * SegmentedControl — botões lado a lado para escolher UMA opção (ex.: 90% / 95% / 99%).
+ * É um "radiogroup" para leitores de tela. Usado no grau de confiança, tipo de desvio,
+ * unidade da proporção e casas decimais.
+ */
+
 import { useId } from "react"
 import { cn } from "cn"
 
@@ -10,7 +16,6 @@ interface SegmentedControlProps<T extends string | number> {
   onChange: (value: T) => void
 }
 
-/** Grupo de opções exclusivas (radiogroup) exibido como botões lado a lado. */
 export function SegmentedControl<T extends string | number>({ label, value, options, onChange }: SegmentedControlProps<T>) {
   const labelId = useId()
   return (
@@ -28,6 +33,7 @@ export function SegmentedControl<T extends string | number>({ label, value, opti
             onClick={() => onChange(opt.value)}
             className={cn(
               "rounded-md px-3 py-1 text-sm transition-colors outline-none focus-visible:ring-3 focus-visible:ring-ring/50",
+              // Opção escolhida fica preenchida; as outras ficam discretas.
               value === opt.value ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-muted",
             )}
           >

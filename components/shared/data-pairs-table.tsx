@@ -1,5 +1,13 @@
 "use client"
 
+/**
+ * DataPairsTable — tabela editável de pares (X, Y), usada em Pearson e na regressão.
+ *
+ * Permite: editar valores, adicionar/remover linhas, limpar, usar exemplo
+ * e colar vários pares de uma vez (ex.: duas colunas copiadas do Excel).
+ * As linhas guardam TEXTO; a conversão para número é feita pelo hook (usePairs).
+ */
+
 import { useState } from "react"
 import { ClipboardPaste, Plus, RotateCcw, Sparkles, Trash2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -10,22 +18,27 @@ import { ErrorMessage } from "./error-message"
 interface DataPairsTableProps {
   rows: PairRow[]
   onChange: (rows: PairRow[]) => void
+  /** Erros por índice de linha (vêm do hook). */
   rowErrors?: Record<number, string>
   onExample?: () => void
   xLabel?: string
   yLabel?: string
 }
 
+/** Tabela vazia com `count` linhas. Também usada como estado inicial nas calculadoras. */
 export const emptyRows = (count = 3): PairRow[] => Array.from({ length: count }, () => ({ x: "", y: "" }))
 
 export function DataPairsTable({ rows, onChange, rowErrors = {}, onExample, xLabel = "X", yLabel = "Y" }: DataPairsTableProps) {
+  // Estado só da área "Colar dados".
   const [pasteOpen, setPasteOpen] = useState(false)
   const [pasteText, setPasteText] = useState("")
   const [pasteError, setPasteError] = useState<string>()
 
+  /** Altera um valor (x ou y) de uma linha. */
   const update = (i: number, key: keyof PairRow, value: string) =>
     onChange(rows.map((row, j) => (j === i ? { ...row, [key]: value } : row)))
 
+  /** Lê o texto colado e, se estiver certo, substitui a tabela inteira. */
   function importPaste() {
     const { rows: parsed, error } = parsePastedPairs(pasteText)
     if (error) return setPasteError(error)
@@ -37,6 +50,7 @@ export function DataPairsTable({ rows, onChange, rowErrors = {}, onExample, xLab
 
   return (
     <div className="flex flex-col gap-3">
+      {/* Barra de ações */}
       <div className="flex flex-wrap gap-2">
         {onExample && (
           <Button variant="outline" size="sm" onClick={onExample}>
@@ -51,6 +65,7 @@ export function DataPairsTable({ rows, onChange, rowErrors = {}, onExample, xLab
         </Button>
       </div>
 
+      {/* Área de colar (abre ao clicar em "Colar dados") */}
       {pasteOpen && (
         <div className="flex flex-col gap-2 rounded-lg border p-3">
           <label htmlFor="paste-pairs" className="text-sm font-medium">
@@ -74,6 +89,7 @@ export function DataPairsTable({ rows, onChange, rowErrors = {}, onExample, xLab
         </div>
       )}
 
+      {/* Tabela */}
       <table className="w-full text-sm">
         <thead>
           <tr className="text-left text-muted-foreground">
@@ -107,6 +123,7 @@ export function DataPairsTable({ rows, onChange, rowErrors = {}, onExample, xLab
                 {rowErrors[i] && <p className="mt-1 text-xs text-destructive">{rowErrors[i]}</p>}
               </td>
               <td className="py-1 pl-1">
+                {/* Sempre sobra pelo menos uma linha. */}
                 <Button
                   variant="ghost"
                   size="icon"

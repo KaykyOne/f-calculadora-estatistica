@@ -1,3 +1,8 @@
+/**
+ * CalculatorCard — card do formulário de cada calculadora,
+ * com título, descrição e os botões "Usar exemplo" e "Limpar" no canto.
+ */
+
 import { RotateCcw, Sparkles } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -5,7 +10,9 @@ import { Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle }
 interface CalculatorCardProps {
   title: string
   description?: string
+  /** Se informado, mostra o botão "Usar exemplo". */
   onExample?: () => void
+  /** Se informado, mostra o botão "Limpar". */
   onReset?: () => void
   children: React.ReactNode
 }

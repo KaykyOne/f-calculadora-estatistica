@@ -1,23 +1,55 @@
 "use client"
 
+/**
+ * CALCULADORA: VALORES CRÍTICOS Zα/2
+ * Mostra α, α/2 e Zα/2 para o grau de confiança escolhido.
+ * Os valores vêm de lib/statistics/critical-values.ts.
+ */
+
 import { useState } from "react"
 import { CalculatorCard } from "@/components/shared/calculator-card"
-import { CalculationSteps } from "@/components/shared/calculation-steps"
+import { CalculationSteps, type Step } from "@/components/shared/calculation-steps"
 import { ConfidenceLevelSelect } from "@/components/shared/confidence-level-select"
-import { ResultCard } from "@/components/shared/result-card"
+import { ResultCard, type ResultItem } from "@/components/shared/result-card"
 import { useCriticalValue } from "@/hooks/use-critical-value"
 import { fmtPlain, texNum } from "@/lib/formatters"
 import type { ConfidenceLevel } from "@/lib/statistics/types"
 
 export function CriticalValueCalculator() {
+  // ─── 1) Estado e cálculo ───
   const [level, setLevel] = useState<ConfidenceLevel>(95)
   const cv = useCriticalValue(level)
 
+  // ─── 2) Valores do card "Resultado" ───
+  const items: ResultItem[] = [
+    { label: "Grau de confiança", value: `${cv.level}%` },
+    { label: "α", value: fmtPlain(cv.alpha) },
+    { label: "α/2", value: fmtPlain(cv.halfAlpha) },
+    { label: "Zα/2", value: fmtPlain(cv.z), highlight: true },
+  ]
+  const interpretation = `Com ${cv.level}% de confiança, ${fmtPlain(cv.halfAlpha * 100)}% da área fica em cada cauda da curva normal, fora do intervalo entre −${fmtPlain(cv.z)} e +${fmtPlain(cv.z)}.`
+
+  // ─── 3) Passo a passo ───
+  const steps: Step[] = [
+    { title: "Fórmula", tex: String.raw`\alpha = 1 - \text{confiança}` },
+    { title: "Substituição", tex: String.raw`\alpha = 1 - ${texNum(cv.confidence)} = ${texNum(cv.alpha)}` },
+    {
+      title: "Divisão entre as duas caudas",
+      tex: String.raw`\frac{\alpha}{2} = \frac{${texNum(cv.alpha)}}{2} = ${texNum(cv.halfAlpha)}`,
+    },
+    {
+      title: "Valor crítico (tabela do material)",
+      tex: String.raw`Z_{\alpha/2} = Z_{${texNum(cv.halfAlpha)}} = ${texNum(cv.z)}`,
+    },
+  ]
+
+  // ─── 4) Tela ───
   return (
     <div className="flex flex-col gap-4">
       <div className="grid items-start gap-4 lg:grid-cols-2">
         <CalculatorCard title="Parâmetros" description="Escolha o grau de confiança desejado.">
           <ConfidenceLevelSelect value={level} onChange={setLevel} />
+          {/* Explicação curta de como a confiança afeta margem de erro e tamanho da amostra. */}
           <div className="space-y-2 text-sm text-muted-foreground">
             <p>
               <strong className="text-foreground">α (alfa)</strong> é o nível de significância: a probabilidade de o
@@ -30,28 +62,9 @@ export function CriticalValueCalculator() {
             </p>
           </div>
         </CalculatorCard>
-        <ResultCard
-          summary={`valor crítico Zα/2 para ${cv.level}% de confiança.`}
-          items={[
-            { label: "Grau de confiança", value: `${cv.level}%` },
-            { label: "α", value: fmtPlain(cv.alpha) },
-            { label: "α/2", value: fmtPlain(cv.halfAlpha) },
-            { label: "Zα/2", value: fmtPlain(cv.z), highlight: true },
-          ]}
-          interpretation={`Com ${cv.level}% de confiança, ${fmtPlain(cv.halfAlpha * 100)}% da área fica em cada cauda da curva normal, fora do intervalo entre −${fmtPlain(cv.z)} e +${fmtPlain(cv.z)}.`}
-        />
+        <ResultCard summary={`valor crítico Zα/2 para ${cv.level}% de confiança.`} items={items} interpretation={interpretation} />
       </div>
-      <CalculationSteps
-        steps={[
-          { title: "Fórmula", tex: String.raw`\alpha = 1 - \text{confiança}` },
-          { title: "Substituição", tex: String.raw`\alpha = 1 - ${texNum(cv.confidence)} = ${texNum(cv.alpha)}` },
-          { title: "Divisão entre as duas caudas", tex: String.raw`\frac{\alpha}{2} = \frac{${texNum(cv.alpha)}}{2} = ${texNum(cv.halfAlpha)}` },
-          {
-            title: "Valor crítico (tabela do material)",
-            tex: String.raw`Z_{\alpha/2} = Z_{${texNum(cv.halfAlpha)}} = ${texNum(cv.z)}`,
-          },
-        ]}
-      />
+      <CalculationSteps steps={steps} />
     </div>
   )
 }

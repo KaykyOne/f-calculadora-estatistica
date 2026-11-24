@@ -1,36 +1,69 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Calculadora de Estatística Aplicada
 
-## Getting Started
+Calculadora por fórmulas, com resolução passo a passo, para:
 
-First, run the development server:
+- **Base:** média, variância e desvio padrão (σ e s)
+- **Valores críticos** Zα/2 (90%, 95%, 99%)
+- **Intervalo de confiança** para a média e para a proporção
+- **Tamanho da amostra** para a média e para a proporção
+- **Correlação de Pearson** e **regressão linear simples**, com gráfico
+
+Tudo roda no navegador: sem servidor, sem banco de dados e sem IA.
+
+## Comandos
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install      # instala as dependências (só na primeira vez)
+npm run dev      # abre em http://localhost:3000 e atualiza ao salvar
+npm test         # roda os testes das fórmulas
+npm run lint     # procura problemas no código
+npm run build    # gera o site estático na pasta out/
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+`npm start` não funciona, porque o projeto gera um site estático para o GitHub Pages.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Como o código está organizado
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+O caminho de um cálculo, da tela até a fórmula:
 
-## Learn More
+```
+Tela (components/calculators/)  →  Hook (hooks/)  →  Fórmula (lib/statistics/)
+ campos de texto, cards            lê o texto,        conta pura, sem React,
+ e passo a passo                   valida e avisa     testada em __tests__/
+```
 
-To learn more about Next.js, take a look at the following resources:
+| Pasta | O que tem |
+|---|---|
+| `lib/statistics/` | As fórmulas. Um arquivo por assunto: `descriptive`, `critical-values`, `confidence-intervals`, `sample-size`, `correlation`, `regression`. |
+| `lib/statistics/validation.ts` | Leitura dos números digitados (vírgula, ponto, milhar) e regras dos campos. |
+| `lib/statistics/types.ts` | Formato dos dados de entrada e de saída de cada fórmula. |
+| `lib/statistics/__tests__/` | Testes com os exemplos do material (um arquivo por fórmula). |
+| `lib/formatters.ts` | Como os números aparecem na tela (casas decimais, %, KaTeX). |
+| `hooks/` | Um hook por calculadora: valida os campos, chama a fórmula e gera os alertas. |
+| `components/calculators/` | A tela de cada calculadora, mais `registry.ts` (lista de abas) e `examples.ts` (dados de exemplo). |
+| `components/shared/` | Peças reutilizadas: campo numérico, card de resultado, passo a passo, tabela X/Y, gráfico. |
+| `components/layout/` | Barra lateral, cabeçalho e estrutura da página. |
+| `components/ui/` | Componentes gerados pelo shadcn. Não precisam ser editados. |
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Onde corrigir cada coisa
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+| Quero mudar... | Arquivo |
+|---|---|
+| Uma fórmula ou o resultado de uma conta | `lib/statistics/<assunto>.ts` |
+| Um valor de Z (ex.: 2,575 → 2,58) | `lib/statistics/critical-values.ts` (tabela `TABLE`) |
+| Como um número digitado é lido (ex.: "2.200") | `lib/statistics/validation.ts` (`parseLocaleNumber`) |
+| Uma mensagem de erro de campo | `lib/statistics/validation.ts` (`validateField`) |
+| Um alerta (ex.: "use t de Student") | `hooks/use-<calculadora>.ts` |
+| Os dados do botão "Usar exemplo" | `components/calculators/examples.ts` |
+| Textos, campos ou passo a passo de uma calculadora | `components/calculators/<calculadora>-calculator.tsx` |
+| Nome, ícone ou ordem das abas | `components/calculators/registry.ts` |
+| Casas decimais ou formato dos números | `lib/formatters.ts` |
+| Cores do tema ou do gráfico | `app/globals.css` |
 
-## Deploy on Vercel
+Depois de mexer em uma fórmula, rode `npm test`. Se algum exemplo do material parar de bater, o teste avisa.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Publicação (GitHub Pages)
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Cada push na `main` publica o site pelo workflow `.github/workflows/nextjs.yml`.
+O `next.config.ts` gera o site estático (`output: "export"`) e usa a variável `BASE_PATH`,
+que o workflow preenche com o caminho do repositório (`/f-calculadora-estatistica`).

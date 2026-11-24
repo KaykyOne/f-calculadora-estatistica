@@ -1,10 +1,16 @@
+/**
+ * CalculationSteps — card "Resolução passo a passo".
+ * Recebe uma lista de passos; cada passo tem um título e uma fórmula (LaTeX) e/ou um texto.
+ */
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { FormulaDisplay } from "./formula-display"
 
 export interface Step {
   title: string
-  /** Expressão LaTeX do passo. */
+  /** Fórmula do passo em LaTeX (opcional). */
   tex?: string
+  /** Texto explicativo (opcional). */
   text?: string
 }
 
@@ -23,6 +29,7 @@ export function CalculationSteps({ steps, title = "Resolução passo a passo" }:
         <ol className="flex flex-col gap-3">
           {steps.map((step, i) => (
             <li key={i} className="flex gap-3">
+              {/* Bolinha com o número do passo. */}
               <span className="flex size-6 shrink-0 items-center justify-center rounded-full bg-muted text-xs font-medium">
                 {i + 1}
               </span>

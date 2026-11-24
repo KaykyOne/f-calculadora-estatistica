@@ -1,7 +1,14 @@
+/*
+ * CSS GLOBAL
+ * - Tailwind + tema do shadcn (cores em variáveis CSS para claro e escuro).
+ * - --series-1 / --series-2: cores do gráfico (pontos e reta), validadas para daltonismo.
+ * Para mudar cores do tema, altere as variáveis em :root (claro) e .dark (escuro).
+ */
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 
+/* Classes dark:... valem quando o <html> tem a classe "dark" (botão de tema). */
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
@@ -49,6 +56,7 @@
 }
 
 :root {
+  /* ── Tema claro ── */
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
   --card: oklch(1 0 0);
@@ -67,6 +75,7 @@
   --border: oklch(0.922 0 0);
   --input: oklch(0.922 0 0);
   --ring: oklch(0.708 0 0);
+  /* Gráfico: pontos (azul) e reta de regressão (laranja) */
   --series-1: #2a78d6;
   --series-2: #eb6834;
   --chart-1: oklch(0.87 0 0);
@@ -86,6 +95,7 @@
 }
 
 .dark {
+  /* ── Tema escuro ── */
   --background: oklch(0.145 0 0);
   --foreground: oklch(0.985 0 0);
   --card: oklch(0.205 0 0);
@@ -104,6 +114,7 @@
   --border: oklch(1 0 0 / 10%);
   --input: oklch(1 0 0 / 15%);
   --ring: oklch(0.556 0 0);
+  /* Gráfico no tema escuro */
   --series-1: #3987e5;
   --series-2: #d95926;
   --chart-1: oklch(0.87 0 0);

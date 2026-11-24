@@ -1,5 +1,10 @@
 "use client"
 
+/**
+ * ConfidenceLevelSelect — escolha do grau de confiança (90%, 95% ou 99%).
+ * As opções vêm de CONFIDENCE_LEVELS, em lib/statistics/critical-values.ts.
+ */
+
 import { CONFIDENCE_LEVELS } from "@/lib/statistics/critical-values"
 import type { ConfidenceLevel } from "@/lib/statistics/types"
 import { SegmentedControl } from "./segmented-control"

@@ -1,5 +1,12 @@
 "use client"
 
+/**
+ * CalculatorSidebar — navegação entre as calculadoras.
+ * Computador: barra lateral com os itens separados por grupo.
+ * Celular: faixa horizontal de abas que rola para o lado.
+ * Os itens vêm de components/calculators/registry.ts.
+ */
+
 import { cn } from "cn"
 import type { CalculatorEntry } from "@/components/calculators/registry"
 
@@ -10,10 +17,12 @@ interface CalculatorSidebarProps {
 }
 
 export function CalculatorSidebar({ items, activeId, onSelect }: CalculatorSidebarProps) {
+  // Grupos na ordem em que aparecem na lista (Set remove repetidos).
   const groups = [...new Set(items.map((i) => i.group))]
+
   return (
     <>
-      {/* Desktop */}
+      {/* Computador (md para cima) */}
       <nav aria-label="Calculadoras" className="hidden w-60 shrink-0 flex-col gap-4 border-r p-4 md:flex">
         <p className="px-2 text-sm font-semibold">Estatística Aplicada</p>
         {groups.map((group) => (
@@ -40,7 +49,7 @@ export function CalculatorSidebar({ items, activeId, onSelect }: CalculatorSideb
         ))}
       </nav>
 
-      {/* Mobile */}
+      {/* Celular (abaixo de md) */}
       <nav aria-label="Calculadoras" className="flex gap-1 overflow-x-auto border-b p-2 md:hidden">
         {items.map((item) => (
           <button

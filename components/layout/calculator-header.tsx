@@ -1,5 +1,10 @@
 "use client"
 
+/**
+ * CalculatorHeader — título e descrição da aba aberta,
+ * seletor de casas decimais (2, 4 ou 6) e botão de tema claro/escuro.
+ */
+
 import { Moon, Sun } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { SegmentedControl } from "@/components/shared/segmented-control"
@@ -14,6 +19,10 @@ interface CalculatorHeaderProps {
 
 const PRECISION_OPTIONS = PRECISIONS.map((p) => ({ value: p, label: String(p) }))
 
+/**
+ * Liga/desliga o tema escuro colocando a classe "dark" no <html> e salva a escolha.
+ * O tema salvo é aplicado ao abrir a página pelo script em app/layout.tsx.
+ */
 function toggleTheme() {
   const dark = document.documentElement.classList.toggle("dark")
   localStorage.setItem("theme", dark ? "dark" : "light")
@@ -29,6 +38,7 @@ export function CalculatorHeader({ title, description, decimals, onDecimalsChang
       <div className="flex items-end gap-3">
         <SegmentedControl label="Casas decimais" value={decimals} options={PRECISION_OPTIONS} onChange={onDecimalsChange} />
         <Button variant="outline" size="icon" onClick={toggleTheme} aria-label="Alternar tema claro/escuro">
+          {/* O ícone troca só com CSS (classe dark:), sem precisar de estado. */}
           <Sun className="hidden dark:block" />
           <Moon className="dark:hidden" />
         </Button>
