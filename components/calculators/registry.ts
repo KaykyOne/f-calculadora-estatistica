@@ -47,15 +47,6 @@ export interface CalculatorEntry {
 
 export const CALCULATORS: CalculatorEntry[] = [
   {
-    id: "valores-criticos",
-    title: "Valores críticos Zα/2",
-    shortTitle: "Valores críticos",
-    description: "Relação entre grau de confiança, nível de significância α e o valor crítico Zα/2.",
-    group: "Fundamentos",
-    icon: Sigma,
-    component: CriticalValueCalculator,
-  },
-  {
     id: "ic-media",
     title: "Intervalo de confiança para a média",
     shortTitle: "IC para a média",
@@ -90,37 +81,7 @@ export const CALCULATORS: CalculatorEntry[] = [
     group: "Tamanho da amostra",
     icon: Users,
     component: SampleSizeProportionCalculator,
-  },
-  {
-    id: "regressao",
-    title: "Regressão linear simples",
-    shortTitle: "Regressão linear",
-    description: "Ajusta a reta ŷ = ax + b pelo método dos mínimos quadrados e faz previsões.",
-    group: "Correlação e regressão",
-    icon: ChartLine,
-    component: LinearRegressionCalculator,
-  },
-  {
-    id: "base",
-    title: "Base: média e desvio padrão",
-    shortTitle: "Base (x̄, σ, s)",
-    description: "Calcula a média, a variância e o desvio padrão (σ e s) de uma lista de valores, com a tabela de desvios.",
-    group: "Extra",
-    extra: true,
-    icon: ChartNoAxesColumn,
-    component: DescriptiveCalculator,
-  },
-  {
-    id: "pearson",
-    title: "Correlação de Pearson",
-    shortTitle: "Pearson (r)",
-    description: "Mede o sentido e a intensidade da relação linear entre duas variáveis X e Y.",
-    group: "Extra",
-    extra: true,
-    collapsed: true,
-    icon: ChartScatter,
-    component: PearsonCalculator,
-  },
+  }
 ]
 
 /** Aba aberta ao carregar a página: a primeira que não é extra. */
