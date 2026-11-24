@@ -6,8 +6,10 @@
  * ► Para mudar o nome, a descrição, o ícone ou a ordem de uma aba, altere só este arquivo.
  * ► Para criar uma calculadora nova: crie o componente em components/calculators/ e
  *   adicione um item aqui.
- * ► Itens com `extra: true` ficam escondidos no rodapé da barra lateral (ex.: aba Base,
+ * ► Itens com `extra: true` ficam discretos no rodapé da barra lateral (ex.: aba Base,
  *   que não faz parte do material da professora).
+ * ► Itens com `extra: true` e `collapsed: true` ficam ainda mais escondidos: só aparecem
+ *   depois de clicar no botão "‹" do rodapé (ex.: Pearson).
  */
 
 import type { ComponentType } from "react"
@@ -35,6 +37,8 @@ export interface CalculatorEntry {
   group: string
   /** true = aba secundária, mostrada discretamente no rodapé da barra lateral. */
   extra?: boolean
+  /** true (junto com extra) = só aparece depois de clicar no botão "‹" do rodapé. */
+  collapsed?: boolean
   /** Ícone (lucide-react). */
   icon: ComponentType<{ className?: string }>
   /** Componente da calculadora. */
@@ -88,15 +92,6 @@ export const CALCULATORS: CalculatorEntry[] = [
     component: SampleSizeProportionCalculator,
   },
   {
-    id: "pearson",
-    title: "Correlação de Pearson",
-    shortTitle: "Pearson (r)",
-    description: "Mede o sentido e a intensidade da relação linear entre duas variáveis X e Y.",
-    group: "Correlação e regressão",
-    icon: ChartScatter,
-    component: PearsonCalculator,
-  },
-  {
     id: "regressao",
     title: "Regressão linear simples",
     shortTitle: "Regressão linear",
@@ -114,6 +109,17 @@ export const CALCULATORS: CalculatorEntry[] = [
     extra: true,
     icon: ChartNoAxesColumn,
     component: DescriptiveCalculator,
+  },
+  {
+    id: "pearson",
+    title: "Correlação de Pearson",
+    shortTitle: "Pearson (r)",
+    description: "Mede o sentido e a intensidade da relação linear entre duas variáveis X e Y.",
+    group: "Extra",
+    extra: true,
+    collapsed: true,
+    icon: ChartScatter,
+    component: PearsonCalculator,
   },
 ]
 

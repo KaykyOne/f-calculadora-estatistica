@@ -8,6 +8,8 @@ const nextConfig: NextConfig = {
   output: "export",
   basePath,
   images: { unoptimized: true },
+  // Ícone "N" do modo dev no canto direito: no esquerdo ele cobria o rodapé da barra lateral.
+  devIndicators: { position: "bottom-right" },
   experimental: {
     agentFeedback: true,
   },
